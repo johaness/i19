@@ -17,7 +17,7 @@
           <a i19a="title link-title-english" title="English" ng-click="$i19.set_lang('en')">en</a>
           <br/>
           <b i19>Name:</b>
-          <input type="text" ng-model="name" />
+          <input type="text" ng-model="name" /> {{name}}
           <img title="title_test" alt="alt_test" i19a="title, alt img-alt">
           <hr/>
           <p i19>
@@ -29,6 +29,7 @@
           Multi
           line without ID
           </pre>
+          <button ng-click="modal()" i19>btn</button>
       </div>
   </body>
 </html>

@@ -8,7 +8,7 @@ DOMAIN=demo
 LOCALES=locale/
 
 
-POT=locale/$(DOMAIN).pot 
+POT=$(LOCALES)$(DOMAIN).pot 
 LANGUAGES=$(LANGUAGES_INCLUDE) $(LANGUAGES_OTHER)
 JSON_INCLUDE=$(addsuffix .json, $(addprefix $(LOCALES), $(LANGUAGES_INCLUDE)))
 JSON_OTHER=$(addsuffix .jsonpath, $(addprefix $(LOCALES), $(LANGUAGES_OTHER)))

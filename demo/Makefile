@@ -12,7 +12,7 @@ POT=$(LOCALES)$(DOMAIN).pot
 LANGUAGES=$(LANGUAGES_INCLUDE) $(LANGUAGES_OTHER)
 JSON_INCLUDE=$(addsuffix .json, $(addprefix $(LOCALES), $(LANGUAGES_INCLUDE)))
 JSON_OTHER=$(addsuffix .jsonpath, $(addprefix $(LOCALES), $(LANGUAGES_OTHER)))
-PATH:=$(PATH):.
+PATH:=$(PATH):../i19py
 
 default: combine
 

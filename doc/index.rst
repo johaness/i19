@@ -79,20 +79,20 @@ I personally prefer using them for explicitness and as a helper for translators.
 Requirements
 ------------
 
-pybabel, beautifulsoup4, make
+pybabel, make
 
 
 TODO
 ----
 
+ * Speed measurements
  * Features:
 
-   * Eval angular pluralization support vs rolling our own
-   * JS string extractor
    * Handle multiple occurences of the same i19n ID
+   * JS string extractor
+   * Eval angular pluralization support vs rolling our own
 
- * Speed measurements
- * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)
  * Tests
+ * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)
  * Documentation
 

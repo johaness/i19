@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 """
-Extract i19 messages from HTML, dump gettext pot file to stdout
-
-Usage: i19extract source0.html source1.html > domain.pot
+Extract i19 messages from HTML, write gettext pot file and include cache
 """
 
 import sys
@@ -44,10 +42,18 @@ VOID_TAGS = (
 
 
 
-def fmttag(tag, attr):
-    return "<%s>" % (" ".join([tag] + ['%s="%s"' % (k, v) for k, v in attr]),)
+def fmttag(tag, attr, exclude=()):
+    """
+    Unparse HTML element ``tag`` with attributes ``attr`` into a string
+    Skip attributes in ``exclude``
+    """
+    return "<%s>" % (" ".join([tag] +
+        ['%s="%s"' % (k, v) for k, v in attr if not k in exclude]),)
 
 class i19Parser(HTMLParser):
+    """
+    Parse HTML and extract i19, i19a, and i19i strings
+    """
     def __init__(self, filename):
         HTMLParser.__init__(self)
         # stack of i18n IDs
@@ -74,13 +80,13 @@ class i19Parser(HTMLParser):
             self._i19[-1][1] += i19id
             self._include = [i19id, self._nest, '']
 
-        # record raw html for i19 string if closest parent is not i19 include
+        # record raw html for i19 string if closest parent is not i19n
         if self._i19 and self._i19[-1][2] >= self._include[1]:
             self._i19[-1][1] += fmttag(tag, attrs)
 
-        # record raw html for include directive
+        # record raw html for i19n directive
         if self._include[1]:
-            self._include[2] += fmttag(tag, attrs)
+            self._include[2] += fmttag(tag, attrs, ('i19n',))
 
         # handle i19 tag/attribute for translating the inner HTML
         if tag == 'i19':
@@ -159,7 +165,7 @@ def main():
                     (dt[2], dt[1], dt[0], i19id,))
 
     with file(sys.argv[2], 'wb') as i19n:
-        dump(inc, i19n)
+        dump((inc, strs,), i19n)
 
 if __name__ == '__main__':
     main()

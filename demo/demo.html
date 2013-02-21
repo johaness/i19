@@ -1,7 +1,6 @@
 <!doctype html>
 <html ng-app="demo" lang="en" ng-controller="ctl">
   <head>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.js"></script>
     <script src="../lib/i19.js"></script>
     <script src="i19dict.js"></script>
@@ -11,15 +10,18 @@
   <body>
       <div>
           <h1 i19>Welcome {{name}} @ {{ts()}}</h1>
-          <i19>Current Language:</i19> {{$i19.get_lang()}} <br/>
-          <i19>Set:</i19>
+          <i19>Current Language:</i19> {{$i19.get_lang()}}
+          <br>
           <a i19a="title" title="Deutsch" ng-click="$i19.set_lang('de')">de</a>
           <a i19a="title link-title-english" title="English" ng-click="$i19.set_lang('en')">en</a>
-          <br/>
-          <b i19>Name:</b>
+          <br>
+          <b i19><i>Name</i>:</b>
           <input type="text" ng-model="name" /> {{name}}
           <img title="title_test" alt="alt_test" i19a="title, alt img-alt">
-          <hr/>
+          <hr>
+          <p i19="para-continue">
+            Click <a i19n="link" ng-click="modal()" i19="link-continue">here<b>!</b></a> to <i></i>continue
+          </p>
           <p i19>
           Trim padding
           </p>

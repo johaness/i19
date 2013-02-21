@@ -3,6 +3,11 @@ i19
 
 a i18n tool chain for angularjs
 
+Requirements
+------------
+
+pybabel, beautifulsoup4
+
 Components
 ----------
 
@@ -63,11 +68,19 @@ I personally prefer using them for explicitness and as a helper for translators.
 TODO
 ----
 
-This is working quite nicely in a minimal demo now, next up are:
+ * Features:
+
+   * Error checking upon JSON compile:
+
+     * translated string should use same variables as original string
+     * same for nested expressions
+
+   * Eval angular pluralization support vs rolling our own
+   * JS string extractor
+   * Handle multiple occurences of the same i19n ID
+
  * Speed measurements
- * JS string extractor
  * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)
- * Eval angular pluralization support vs rolling our own
  * Tests
  * Documentation
 

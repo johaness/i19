@@ -9,9 +9,10 @@ Usage: i19extract source0.html source1.html > domain.pot
 import sys
 from HTMLParser import HTMLParser
 import time
+from cPickle import dump
 
 # from pygettext
-pot_header = '''\
+POT_HEADER = '''\
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR ORGANIZATION
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
@@ -30,66 +31,135 @@ msgstr ""
 
 '''
 
+# List of void HTML elements (ie without end tag)
+VOID_TAGS = (
+    # HTML4
+    # http://www.w3.org/TR/html4/index/elements.html
+    'area', 'base', 'basefont', 'br', 'col', 'frame', 'hr', 'img',
+    'input', 'isindex', 'link', 'meta', 'param',
+    # New in HTML5
+    # http://www.w3.org/TR/html-markup/syntax.html#void-element
+    'command', 'embed', 'keygen', 'source', 'track', 'wbr',
+)
+
 
+
+def fmttag(tag, attr):
+    return "<%s>" % (" ".join([tag] + ['%s="%s"' % (k, v) for k, v in attr]),)
 
 class i19Parser(HTMLParser):
     def __init__(self, filename):
         HTMLParser.__init__(self)
-        self._i19 = None
-        self._strs = dict()
+        # stack of i18n IDs
+        self._i19 = []
+        # tag nesting level counter
+        self._nest = 0
+        # id, nesting level, and raw html of current include directive
+        self._include = ['', 0, '']
+        # collect {i18n ID: translation strings}
+        self.strs, self.includes = dict(), dict()
+
         self._fn = filename
-        with file(filename) as f:
-            self.feed(f.read())
+        with file(filename) as inf:
+            self.feed(inf.read())
 
     def handle_starttag(self, tag, attrs):
+        if not tag in VOID_TAGS:
+            self._nest += 1
         attrdict = dict(attrs)
 
-        # handle i19 tag for translating the inner HTML
-        if tag == 'i19':
-            self._i19 = ''
-        elif not 'i19' in attrdict:
-            self._i19 = None
-        else:
-            self._i19 = attrdict.get('i19') or ''
+        # handle i19n attribute for nested translations
+        if 'i19n' in attrdict:
+            i19id = "${" + attrdict['i19n'] + "}"
+            self._i19[-1][1] += i19id
+            self._include = [i19id, self._nest, '']
 
-        # handle i19a tag for translating attributes
-        if not 'i19a' in attrdict:
-            return
-        for attribute in attrdict.get('i19a').split(','):
+        # record raw html for i19 string if closest parent is not i19 include
+        if self._i19 and self._i19[-1][2] >= self._include[1]:
+            self._i19[-1][1] += fmttag(tag, attrs)
+
+        # record raw html for include directive
+        if self._include[1]:
+            self._include[2] += fmttag(tag, attrs)
+
+        # handle i19 tag/attribute for translating the inner HTML
+        if tag == 'i19':
+            self._i19.append(['', '', self._nest])
+        elif 'i19' in attrdict:
+            self._i19.append([attrdict.get('i19') or '', '', self._nest])
+
+        # handle i19a attribute for translating attributes
+        trans_attr = 'i19a' in attrdict and \
+                attrdict.get('i19a').split(',') or []
+        for attribute in trans_attr:
             spec = attribute.strip().split(' ')
             value = attrdict[spec[0]]
             if len(spec) == 1: # no translation id given
                 spec.append(value)
-            self._strs[spec[1]] = ("%s:%d" % (self._fn, self.lineno,), value)
+            self.strs[spec[1]] = ("%s:%d" % (self._fn, self.lineno,), value,
+                    '<%s %s>' % (tag, spec[0]))
 
 
     def handle_endtag(self, tag):
-        self._i19 = None
+        if not tag in VOID_TAGS:
+            self._nest -= 1
+
+        if not self._i19:
+            return
+
+        # store raw html
+        if self._include[1]:
+            self._include[2] += "</" + tag + ">"
+
+        # i19 directive not closed yet
+        if self._i19[-1][2] <= self._nest:
+            self._i19[-1][1] += "</" + tag + ">"
+            return
+
+        i19id, data, _ = self._i19.pop()
+
+        if self._i19 and self._include[0]:
+            # documentation for nested i19 tags
+            doc = "%s %s" % (self._i19[-1][0], self._include[0],)
+        else:
+            doc = ''
+
+        # end of include directive
+        if self._include[1] >= self._nest:
+            inid, _, raw = self._include
+            self.includes[inid] = raw
+            self._include = ['', 0, '']
+
+        data = data.strip().replace('\n', '\\n')
+        self.strs[(i19id or data)] = \
+                ("%s:%d" % (self._fn, self.lineno,), data, doc)
 
     def handle_data(self, data):
-        if self._i19 is None:
+        if not self._i19:
             return
-        data = data.strip().replace('\n', '\\n')
-        self._strs[self._i19 or data] = ("%s:%d" % (self._fn, self.lineno,), data)
+        self._i19[-1][1] += data
+        if self._include[1]:
+            self._include[2] += data
 
 
 
 def main():
-    assert len(sys.argv) > 1, "Usage: i19extract source0 source1 .."
+    assert len(sys.argv) > 3, "Usage: i19extract POT_FILE CACHE_FILE [SOURCES..]"
 
-    strs = dict()
-    for src_file in sys.argv[1:]:
+    strs, inc = dict(), dict()
+    for src_file in sys.argv[3:]:
         parser = i19Parser(src_file)
-        strs.update(parser._strs.items())
+        strs.update(parser.strs.items())
+        inc.update(parser.includes.items())
 
-    print pot_header % (time.strftime('%Y-%m-%d %H:%M+0000'),)
+    with file(sys.argv[1], 'w') as pot:
+        pot.write(POT_HEADER % (time.strftime('%Y-%m-%d %H:%M+0000'),))
+        for i19id, dt in strs.items():
+            pot.write('#. %s\n#. Default: %s\n#: %s\nmsgid "%s"\nmsgstr ""\n\n' %
+                    (dt[2], dt[1], dt[0], i19id,))
 
-    for k, v in strs.items():
-        print "#. Default:", v[1]
-        print "#:", v[0]
-        print 'msgid "%s"' % k
-        print 'msgstr ""'
-        print
+    with file(sys.argv[2], 'wb') as i19n:
+        dump(inc, i19n)
 
 if __name__ == '__main__':
     main()

@@ -147,6 +147,7 @@ TODO
    * Handle multiple occurences of the same i19n ID
    * JS string extractor
    * Eval angular pluralization support vs rolling our own
+   * Manhole for live updates of translation files
 
  * Tests
  * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)

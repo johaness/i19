@@ -10,3 +10,4 @@ pygments_style = 'sphinx'
 html_theme = 'nature'
 html_static_path = ['_static']
 htmlhelp_basename = 'i19doc'
+html_sidebars = {'**': ['localtoc.html']}

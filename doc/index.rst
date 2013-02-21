@@ -20,7 +20,7 @@ Workflow
  1. Annotate HTML (see Examples below), include ``lib/i19n.js``
  2. Run extraction (see ``demo/Makefile``)
  3. Edit translation strings (see ``demo/locales/en/LC_MESSAGES/demo.po``)
- 4. Compile JSON language file (eg ``demo/locales/en.json``) and 
+ 4. Compile JSON language file (eg ``demo/locales/en.json``) and
     JavaScript preloader ``i19dict.js``
  5. Switch languages on the fly by calling ``$i19.set_lang('de')``
 
@@ -46,24 +46,80 @@ Examples
 
 .. highlight:: html
 
-Usage Examples::
+Anonymous tag::
 
     <i19>Tag only</i19>
 
-    <div i19>Attribute marker</div>
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+Tag only         Tag only
+===============  ===========================
 
-    <div i19="product-view-headline">With explicit i18n IDs</div>
+Anonymous tag marked by attribute::
 
-    <img alt="Translated Attribute" i19a="alt" />
+    <div i19>Attribute</div>
+
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+Attribute        Attribute
+===============  ===========================
+
+Named tag::
+
+    <div i19="product-view-h">With explicit i18n IDs</div>
+
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+product-view-h   With explicit i18n IDs
+===============  ===========================
+
+Anonymous attributes::
+
+    <img alt="Translated" i19a="alt" />
+
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+Translated       Translated
+===============  ===========================
+
+Named attributes::
 
     <img alt="Translated too" i19a="alt with-i18n-id" />
 
-    <img alt="Translated" title="Translated too" i19a="alt, title with-another-i18n-id" />
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+with-i18n-id     Translated too
+===============  ===========================
 
-    <p i19="para">Sourounding text with a
+Multiple attributes::
+
+    <img alt="Translated" title="Translated too" i19a="alt, title with-another-id" />
+
+===============  ===========================
+i19 ID           Default
+===============  ===========================
+Translated       Translated
+with-another-id  Translated too
+===============  ===========================
+
+Embedded HTML elements::
+
+    <p i19="para">Text with a
       <button i19i="button" i19="button-label">named chunk of html</button>
       inside.
     </p>
+
+===============  =============================
+i19 ID           Default
+===============  =============================
+para             Text with a ${button} inside.
+button-label     named chunk of html
+===============  =============================
 
 
 .. highlight:: javascript

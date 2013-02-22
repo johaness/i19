@@ -138,17 +138,33 @@ Requirements
 pybabel, make
 
 
+Future Features
+---------------
+
+  * Handle multiple occurences of the same i19n ID
+
+    * List all filename:lineno
+    * Warn if default strings vary
+
+  * JS string extractor
+
+    * Check if pybabel parser can be used
+
+  * Attribute/Tag name converter for Chameloen to verify fall back
+
+  * Eval angular pluralization support vs rolling our own
+
+    * Possible syntax: Parameter to i18n ID e.g. ``<i19="id(number)">..``
+
+  * Manhole for live updates of translation files
+
+    * Allow translators to see the live app with their own tranlation strings
+
+
 TODO
 ----
 
  * Speed measurements
- * Features:
-
-   * Handle multiple occurences of the same i19n ID
-   * JS string extractor
-   * Eval angular pluralization support vs rolling our own
-   * Manhole for live updates of translation files
-
  * Tests
  * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)
  * Documentation

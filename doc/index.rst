@@ -135,7 +135,7 @@ I personally prefer using them for explicitness and as a helper for translators.
 Requirements
 ------------
 
-pybabel, make
+pybabel, simplejson, make
 
 
 Future Features

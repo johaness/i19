@@ -5,7 +5,7 @@ Compile gettext po file into json
 """
 
 import sys
-import simplejson
+import json
 from cPickle import load
 import re
 from logging import warn, info, getLogger
@@ -97,7 +97,7 @@ def main():
                     100.0 * len(messages) / len(catalog),)
 
     with file(jo_file, 'w') as json:
-        simplejson.dump({locale: messages}, json)
+        json.dump({locale: messages}, json)
 
 
 if __name__ == '__main__':

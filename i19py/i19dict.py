@@ -16,7 +16,7 @@ def main():
     """
     Usage: i19dict target.js source0.json source1.json ..
     """
-    assert len(sys.argv > 2), main.__doc__
+    assert len(sys.argv) > 2, main.__doc__
 
     json = [u'angular.extend(d, %s);' % (file(fn).read(),)
             for fn in sys.argv[2:]]

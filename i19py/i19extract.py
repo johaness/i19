@@ -150,7 +150,8 @@ class i19Parser(HTMLParser):
 
 
 def main():
-    assert len(sys.argv) > 3, "Usage: i19extract POT_FILE CACHE_FILE [SOURCES..]"
+    assert len(sys.argv) > 3, \
+            "Usage: i19extract POT_FILE CACHE_FILE [SOURCES..]"
 
     strs, inc = dict(), dict()
     for src_file in sys.argv[3:]:

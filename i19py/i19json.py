@@ -96,8 +96,8 @@ def main():
             jo_file, len(messages), len(catalog), 
                     100.0 * len(messages) / len(catalog),)
 
-    with file(jo_file, 'w') as json:
-        json.dump({locale: messages}, json)
+    with file(jo_file, 'w') as json_file:
+        json.dump({locale: messages}, json_file)
 
 
 if __name__ == '__main__':

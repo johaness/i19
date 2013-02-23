@@ -52,7 +52,7 @@ def fmttag(tag, attr, exclude=()):
 
 class i19Parser(HTMLParser):
     """
-    Parse HTML and extract i19, i19a, and i19i strings
+    Parse HTML and extract i19, i19-attr, and i19-name strings
     """
     def __init__(self, filename):
         HTMLParser.__init__(self)
@@ -74,19 +74,19 @@ class i19Parser(HTMLParser):
             self._nest += 1
         attrdict = dict(attrs)
 
-        # handle i19n attribute for nested translations
-        if 'i19n' in attrdict:
-            i19id = "${" + attrdict['i19n'] + "}"
+        # handle i19-name attribute for nested translations
+        if 'i19-name' in attrdict:
+            i19id = "${" + attrdict['i19-name'] + "}"
             self._i19[-1][1] += i19id
             self._include = [i19id, self._nest, '']
 
-        # record raw html for i19 string if closest parent is not i19n
+        # record raw html for i19 string if closest parent is not i19-name
         if self._i19 and self._i19[-1][2] >= self._include[1]:
             self._i19[-1][1] += fmttag(tag, attrs)
 
-        # record raw html for i19n directive
+        # record raw html for i19-name directive
         if self._include[1]:
-            self._include[2] += fmttag(tag, attrs, ('i19n',))
+            self._include[2] += fmttag(tag, attrs, ('i19-name',))
 
         # handle i19 tag/attribute for translating the inner HTML
         if tag == 'i19':
@@ -94,9 +94,9 @@ class i19Parser(HTMLParser):
         elif 'i19' in attrdict:
             self._i19.append([attrdict.get('i19') or '', '', self._nest])
 
-        # handle i19a attribute for translating attributes
-        trans_attr = 'i19a' in attrdict and \
-                attrdict.get('i19a').split(',') or []
+        # handle i19-attr attribute for translating attributes
+        trans_attr = 'i19-attr' in attrdict and \
+                attrdict.get('i19-attr').split(',') or []
         for attribute in trans_attr:
             spec = attribute.strip().split(' ')
             value = attrdict[spec[0]]

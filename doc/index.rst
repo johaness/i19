@@ -17,7 +17,7 @@ Translation toolchain:
 Workflow
 --------
 
- 1. Annotate HTML (see Examples below), include ``lib/i19n.js``
+ 1. Annotate HTML (see Examples below), include ``lib/i19.js``
  2. Run extraction (see ``demo/Makefile``)
  3. Edit translation strings (see ``demo/locales/en/LC_MESSAGES/demo.po``)
  4. Compile JSON language file (eg ``demo/locales/en.json``) and
@@ -78,7 +78,7 @@ product-view-h   With explicit i18n IDs
 
 Anonymous attributes::
 
-    <img alt="Translated" i19a="alt" />
+    <img alt="Translated" i19-attr="alt" />
 
 ===============  ===========================
 i19 ID           Default
@@ -88,7 +88,7 @@ Translated       Translated
 
 Named attributes::
 
-    <img alt="Translated too" i19a="alt with-i18n-id" />
+    <img alt="Translated too" i19-attr="alt with-i18n-id" />
 
 ===============  ===========================
 i19 ID           Default
@@ -98,7 +98,7 @@ with-i18n-id     Translated too
 
 Multiple attributes::
 
-    <img alt="Translated" title="Translated too" i19a="alt, title with-another-id" />
+    <img alt="Translated" title="Translated too" i19-attr="alt, title with-another-id" />
 
 ===============  ===========================
 i19 ID           Default
@@ -109,16 +109,16 @@ with-another-id  Translated too
 
 Embedded HTML elements::
 
-    <p i19="para">Text with a
-      <button i19i="button" i19="button-label">named chunk of html</button>
+    <p i19="outer_text">Text with a
+      <button i19-name="button_marker" i19="button_label">named chunk of html</button>
       inside.
     </p>
 
 ===============  =============================
 i19 ID           Default
 ===============  =============================
-para             Text with a ${button} inside.
-button-label     named chunk of html
+outer_text       Text with a ${button_marker} inside.
+button_label     named chunk of html
 ===============  =============================
 
 
@@ -141,7 +141,7 @@ pybabel, make
 Future Features
 ---------------
 
-  * Handle multiple occurences of the same i19n ID
+  * Handle multiple occurences of the same translation ID
 
     * List all filename:lineno
     * Warn if default strings vary
@@ -165,7 +165,8 @@ TODO
 ----
 
  * Speed measurements
- * Tests
+ * Unittests
+ * Integration tests: HTML source files w/ corner cases
  * Build system (currently: Makefile; babel provides setuptools extensions - not sure if desirable)
  * Documentation
 

@@ -126,7 +126,8 @@ class i19Parser(HTMLParser):
 
         if self._i19 and self._include[0]:
             # documentation for nested i19 tags
-            doc = "%s %s" % (self._i19[-1][0], self._include[0],)
+            doc = "Referenced in %r as %s" % \
+                    (self._i19[-1][0], self._include[0],)
         else:
             doc = ''
 

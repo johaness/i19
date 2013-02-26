@@ -1,7 +1,7 @@
 i19
 ===
 
-an internationalization tool chain for angularjs
+Internationalization tool chain for AngularJS
 
 Components
 ----------
@@ -18,11 +18,11 @@ Workflow
 --------
 
  1. Annotate HTML (see Examples below), include ``lib/i19.js``
- 2. Run extraction (see ``demo/Makefile``)
+ 2. Run extraction (see Usage below)
  3. Edit translation strings (see ``demo/locales/en/LC_MESSAGES/demo.po``)
  4. Compile JSON language file (eg ``demo/locales/en.json``) and
-    JavaScript preloader ``i19dict.js``
- 5. Switch languages on the fly by calling ``$i19.set_lang('de')``
+    JavaScript pre-loader
+ 5. Use the ``$i19`` angular service and switch languages on the fly by calling ``$i19.set_lang('de')``
 
 
 Features
@@ -41,12 +41,15 @@ All in all the above is a pretty standard gettext workflow. The resulting POs ar
 On the other hand, this remains an inline i18n solution, so the HTML inevitably gets more cluttered.
 
 
-Examples
---------
+Translation Examples
+--------------------
 
 .. highlight:: html
 
-Anonymous tag::
+The following examples demonstrate usage of the various ``i19-*`` attributes
+and show the resulting translation data.
+
+To translate the *content* of an HTML element, either use the ``i19`` tag::
 
     <i19>Tag only</i19>
 
@@ -56,7 +59,7 @@ i19 ID           Default
 Tag only         Tag only
 ===============  ===========================
 
-Anonymous tag marked by attribute::
+or the ``i19`` attribute::
 
     <div i19>Attribute</div>
 
@@ -66,7 +69,8 @@ i19 ID           Default
 Attribute        Attribute
 ===============  ===========================
 
-Named tag::
+To help translators we strongly suggest giving each translation string a name ("i19 ID") 
+to establish context::
 
     <div i19="product-view-h">With explicit i18n IDs</div>
 
@@ -76,7 +80,7 @@ i19 ID           Default
 product-view-h   With explicit i18n IDs
 ===============  ===========================
 
-Anonymous attributes::
+To translate *attributes* of HTML nodes, use the ``i19-attr`` tag::
 
     <img alt="Translated" i19-attr="alt" />
 
@@ -86,17 +90,18 @@ i19 ID           Default
 Translated       Translated
 ===============  ===========================
 
-Named attributes::
+Again, you should provide a name for the string::
 
-    <img alt="Translated too" i19-attr="alt with-i18n-id" />
+    <img alt="Translated too" i19-attr="alt portrait-alt" />
 
 ===============  ===========================
 i19 ID           Default
 ===============  ===========================
-with-i18n-id     Translated too
+portrait-alt     Translated too
 ===============  ===========================
 
-Multiple attributes::
+Multiple attributes can be translated by separating them with commas.
+You can mix between explicit and implicit i19 IDs::
 
     <img alt="Translated" title="Translated too" i19-attr="alt, title with-another-id" />
 
@@ -107,29 +112,89 @@ Translated       Translated
 with-another-id  Translated too
 ===============  ===========================
 
-Embedded HTML elements::
+Sometimes you need to translate elements that are contained in other elements
+that need to be translated as well. Consider this example::
 
-    <p i19="outer_text">Text with a
-      <button i19-name="button_marker" i19="button_label">named chunk of html</button>
-      inside.
+    <p>Click <a href="..">here</a> to continue</p>
+
+While i19 allows you to just include the ``<a href..``, it is 
+less error-prone if the translator does not have to deal with
+HTML at all.
+Ideally, she should translate two strings separately:
+
+ * the "here" from the link caption, and
+ * the surrounding string, preferably with a placeholder: "Click ${placeholder} to continue"
+
+i19 supports this functionality via the ``i19-name`` attribute::
+
+    <p i19="outer">Click 
+        <a i19-name="link-to-next" i19="link-caption">here</a>
+        to continue
     </p>
+
 
 ===============  =============================
 i19 ID           Default
 ===============  =============================
-outer_text       Text with a ${button_marker} inside.
-button_label     named chunk of html
+outer            Click ${placeholder} to continue
+link-caption     here
 ===============  =============================
+
+The translation notes for "link-caption" will also include a reference to the
+source string: "Referenced in 'outer' as ${placeholder}"
 
 
 .. highlight:: javascript
 
-From Javascript::
+Finally, the translation engine can be accessed programmatically from Javascript::
 
     alert($i19("Hello World"));
 
-A code base should probably stick to one of the two styles -- explicit i18n id or not --
-I personally prefer using them for explicitness and as a helper for translators.
+
+Configuration
+-----
+
+.. highlight:: makefile
+
+Create a new ``Makefile`` for your project::
+
+    # languages to pre-load by including in JavaScript
+    LANGUAGES_INCLUDE=en
+
+    # other languages available as JSON for delayed loading
+    LANGUAGES_OTHER=de
+
+    # translation domain
+    DOMAIN=my_app
+
+    # locale directory, will create one sub-directory per language
+    LOCALES=locale/
+
+    # HTML sources
+    HTML=*.html
+
+    # Output: JavaScript file for pre-loading translation strings
+    I19JS=locale/i19dict.js
+
+    include common.mk
+
+
+.. highlight:: shell
+
+Initialize the translation file structure once::
+
+    make -Ipath/to/i19py init
+
+Usage
+-----
+
+Extract strings from source, merge with update existing translations,
+compile JavaScript and JSON output::
+
+    make -Ipath/to/i19py
+
+Instead of providing the path to i19py on the command line you can also
+change the ``include common.mk`` line in the Makefile to contain the full path.
 
 
 Requirements

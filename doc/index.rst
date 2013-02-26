@@ -117,8 +117,8 @@ that need to be translated as well. Consider this example::
 
     <p>Click <a href="..">here</a> to continue</p>
 
-While i19 allows you to just include the ``<a href..``, it is 
-less error-prone if the translator does not have to deal with
+While i19 allows you to just include the ``<a href..`` in a translation string,
+it is less error-prone if the translator does not have to deal with
 HTML at all.
 Ideally, she should translate two strings separately:
 
@@ -133,15 +133,14 @@ i19 supports this functionality via the ``i19-name`` attribute::
     </p>
 
 
-===============  =============================
-i19 ID           Default
-===============  =============================
-outer            Click ${placeholder} to continue
-link-caption     here
-===============  =============================
+===============  ================================= ==================
+i19 ID           Default                           Translation notes
+===============  ================================= ==================
+outer            Click ${link-to-next} to continue
+link-caption     here                              Referenced in 'outer' as ${link-to-next}
+===============  ================================= ==================
 
-The translation notes for "link-caption" will also include a reference to the
-source string: "Referenced in 'outer' as ${placeholder}"
+
 
 
 .. highlight:: javascript
@@ -194,7 +193,7 @@ compile JavaScript and JSON output::
     make -Ipath/to/i19py
 
 Instead of providing the path to i19py on the command line you can also
-change the ``include common.mk`` line in the Makefile to contain the full path.
+change the ``include common.mk`` line in your Makefile to contain the full path.
 
 
 Requirements

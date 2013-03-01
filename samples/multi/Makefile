@@ -12,4 +12,4 @@ HTML=*.html
 I19JS=i19dict.js
 
 
-include common.mk
+include $(shell i19conf common.mk)

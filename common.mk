@@ -23,7 +23,7 @@ update: extract
 compile: update
 	for L in $(LANGUAGES); do \
 		i19json $(LOCALES)$$L/LC_MESSAGES/$(DOMAIN).po $$L $(POT).i19n $(LOCALES)$$L.json; \
-		echo "{\"$$L\": \"$(LOCALES)$$L.json\"}" > $(LOCALES)$$L.jsonpath; \
+		echo "{\"$$L\": \"$(BASEURL)$(LOCALES)$$L.json\"}" > $(LOCALES)$$L.jsonpath; \
     done
 
 combine: compile

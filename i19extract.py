@@ -8,6 +8,7 @@ import sys
 from HTMLParser import HTMLParser
 import time
 from cPickle import dump
+import re
 
 # from pygettext
 POT_HEADER = '''\
@@ -72,7 +73,8 @@ def sanitize(i19id):
     """
     Filter i18n IDs to me alphanumeric characters and - or _ only
     """
-    return "".join(c for c in i19id if c.isalnum() or c in "-_")
+    e19id = re.sub(r'\\.', '', i19id)
+    return "".join(c for c in e19id if c.isalnum() or c in "-_")
 
 
 class i19Parser(HTMLParser):

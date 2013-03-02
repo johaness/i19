@@ -29,6 +29,23 @@ msgstr ""
 
 '''
 
+POT_SINGULAR = '''
+#. %s
+#. Default: %s
+#: %s
+msgid "%s"
+msgstr ""
+'''
+
+POT_PLURAL = '''
+#. %s
+#. Default: %s
+#: %s
+msgid "%s"
+msgid_plural "%s"
+msgstr ""
+'''
+
 # List of void HTML elements (ie without end tag)
 VOID_TAGS = (
     # HTML4
@@ -163,8 +180,10 @@ def main():
     with file(sys.argv[1], 'w') as pot:
         pot.write(POT_HEADER % (time.strftime('%Y-%m-%d %H:%M+0000'),))
         for i19id, dt in strs.items():
-            pot.write('#. %s\n#. Default: %s\n#: %s\nmsgid "%s"\nmsgstr ""\n\n' %
-                    (dt[2], dt[1], dt[0], i19id,))
+            if i19id.endswith(')'):
+                pot.write(POT_PLURAL % (dt[2], dt[1], dt[0], i19id, i19id,))
+            else:
+                pot.write(POT_SINGULAR % (dt[2], dt[1], dt[0], i19id,))
 
     with file(sys.argv[2], 'wb') as i19n:
         dump((inc, strs,), i19n)

@@ -67,6 +67,14 @@ def fmttag(tag, attr, exclude=()):
     return "<%s>" % (" ".join([tag] +
         ['%s="%s"' % (k, v) for k, v in attr if not k in exclude]),)
 
+
+def sanitize(i19id):
+    """
+    Filter i18n IDs to me alphanumeric characters and - or _ only
+    """
+    return "".join(c for c in i19id if c.isalnum() or c in "-_")
+
+
 class i19Parser(HTMLParser):
     """
     Parse HTML and extract i19, i19-attr, and i19-name strings
@@ -155,7 +163,7 @@ class i19Parser(HTMLParser):
             self._include = ['', 0, '']
 
         data = data.strip().replace('\n', '\\n')
-        self.strs[(i19id or data)] = \
+        self.strs[(i19id or sanitize(data))] = \
                 ("%s:%d" % (self._fn, self.lineno,), data, doc)
 
     def handle_data(self, data):

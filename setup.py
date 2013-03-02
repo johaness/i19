@@ -26,9 +26,7 @@ setup(
                 'i19conf=i19.i19conf:main',
                 ],
             },
-        requires = [
-            "pybabel",
-            ],
+        install_requires = ['babel',],
         classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Console',

@@ -36,11 +36,12 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
     function translate(input) {
         var output = i19dict[language][input];
 
-        if (!output)
+        if (!output && translate.warn_on_missing_strings)
             console.warn('i19: ' + language + ' missing "' + input + '"');
 
         return output || input;
     }
+    translate.warn_on_missing_strings = true;
 
     /**
      * @name i19.$i19.translate.get_lang

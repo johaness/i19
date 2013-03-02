@@ -16,10 +16,17 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
 
     /**
      * @private
-     * @description
-     * Current language
+     * @description Current language
      */
     var language = 'en';
+
+    /**
+     * @private
+     * @description Convert an amount into an index into the pluralization list
+     */
+    function count2plural(n) {
+        return 0 + eval(i19dict[language].__pluralization_expr__);
+    }
 
     /**
      * @name i19.$i19.translate
@@ -33,15 +40,40 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
      *
      * @example $i19('Welcome') == 'Willkommen'
      */
-    function translate(input) {
+    function translate(input, plural) {
         var output = i19dict[language][input];
+
+        if (!angular.isUndefined(plural))
+            output = output[count2plural(plural)];
 
         if (!output && translate.warn_on_missing_strings)
             console.warn('i19: ' + language + ' missing "' + input + '"');
 
-        return output || input;
+        return output;
     }
     translate.warn_on_missing_strings = true;
+
+    /**
+     * @name i19.$i19.translate._extract_plural
+     * @function
+     *
+     * @description
+     */
+    translate._extract_plural = function(i19id) {
+        var pl_start = i19id.indexOf('(') + 1;
+        if (pl_start > 0)
+            return i19id.slice(pl_start, -1);
+    }
+
+    /**
+     * @name i19.$i19.translate._sanitize
+     * @function
+     *
+     * @description convert default translation string into acceptable i19 ID
+     */
+    translate._sanitize = function(default_value) {
+        return default_value.replace(/[^A-Za-z0-9\-_]/gi,'');
+    }
 
     /**
      * @name i19.$i19.translate.get_lang
@@ -112,12 +144,22 @@ directive('i19', ['$i19', '$compile', function($i19, $compile) {
     return {
         priority: 99,
         compile: function(elem, attrs, transclude) {
-            var i19id = attrs.i19 || elem.html().trim();
-            elem.html('');
+            var i19id = attrs.i19 || $i19._sanitize(elem.html().trim()),
+                plural = $i19._extract_plural(attrs.i19 || ''),
+                deflt = elem.html(),
+                watcher;
             return function($scope, elem) {
                 function re_compile() {
-                    elem.html($i19(i19id));
-                    $compile(elem.contents())($scope)
+                    if (plural) {
+                        watcher && watcher();
+                        watcher = $scope.$watch(plural, function(count) {
+                            elem.html($i19(i19id, count) || deflt);
+                            $compile(elem.contents())($scope)
+                        });
+                    } else {
+                        elem.html($i19(i19id) || deflt);
+                        $compile(elem.contents())($scope)
+                    }
                 }
                 $scope.$on('language_changed', re_compile);
                 re_compile();
@@ -143,36 +185,53 @@ directive('i19Attr', ['$i19', '$interpolate', function($i19, $interpolate) {
         restrict: 'A',
         priority: 98,
         compile: function(elem, attrs, transclude) {
-            var attr_names = {};
-            // build mapping {attribute_name: i19id}
+            var attr_map = {};
+            // build mapping {attribute_name: [i19id, pluralization expr]}
             // and clear current attribute values
             angular.forEach(attrs.i19Attr.split(','), function(attspec) {
                 var spec = attspec.trim().split(' '),
-                    aname = spec[0].trim();
-                this[aname] = (spec[1] || '').trim() || attrs[aname];
+                    aname = spec[0].trim(),
+                    i19id = (spec[1] || '').trim(),
+                    plural = $i19._extract_plural(i19id);
+                this[aname] = [i19id || $i19._sanitize(attrs[aname]),
+                    plural, attrs[aname]];
                 elem.attr(aname, '');
-            }, attr_names);
-            return function link($scope) {
-                var watchers = [];
-                // render attributes into element
+            }, attr_map);
+            return function link($scope, elem) {
+                var watcher = {};
+                // Translate and interpolate one attribute
+                function transpolate(id_pl, aname) {
+                    var i19id = id_pl[0],
+                        plural = id_pl[1],
+                        deflt = id_pl[2],
+                        translated = $i19(i19id,
+                                plural && $scope.$eval(plural)) || deflt;
+                        transpolated = $interpolate(translated, true);
+                    // re-initialize watchers after every language or
+                    // pluralization change to deal with changing variable
+                    // names between translation strings
+                    (watcher[aname] || []).map(function(unregister) { unregister(); });
+                    watcher[aname] = [];
+                    if (plural) {
+                        watcher[aname].push(
+                            $scope.$watch(plural, function(nv, ov) {
+                                if (nv !== ov) transpolate(id_pl, aname);
+                            }));
+                    }
+                    if (transpolated) {
+                        // if the translation string is interpolated,
+                        // we need to watch for changes
+                        watcher[aname].push(
+                            $scope.$watch(transpolated, function(nv) {
+                                elem.attr(aname, nv);
+                            }));
+                    } else {
+                        elem.attr(aname, translated);
+                    }
+                }
+                // render all attributes
                 function re_compile() {
-                    // we re-initialize watcher after every language change
-                    // to deal with changing variable use between languages
-                    watchers.map(function(unregister) { unregister(); });
-                    angular.forEach(attr_names, function(i19id, aname) {
-                        var translated = $i19(i19id),
-                            transpolated = $interpolate(translated, true);
-                        if (transpolated) {
-                            // if the translation string is interpolated,
-                            // we need to watch for changes
-                            watchers.push(
-                                $scope.$watch(transpolated, function(nv) {
-                                    elem.attr(aname, nv);
-                                }));
-                        } else {
-                            elem.attr(aname, translated);
-                        }
-                    }, watchers);
+                    angular.forEach(attr_map, transpolate);
                 }
                 $scope.$on('language_changed', re_compile);
                 re_compile();

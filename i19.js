@@ -51,7 +51,19 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
 
         return output;
     }
+    /**
+     * @property {bool} i19.$i19.translate.warn_on_missing_strings
+     *
+     * @description emit console warning for each missing translation string
+     */
     translate.warn_on_missing_strings = true;
+    /**
+     * @property {bool} i19.$i19.translate.fallback_default
+     *
+     * @description return default string in case no translation
+     *              is available; if false, return i18n ID
+     */
+    translate.fallback_default = true;
 
     /**
      * @name i19.$i19.translate._extract_plural
@@ -153,11 +165,13 @@ directive('i19', ['$i19', '$compile', function($i19, $compile) {
                     if (plural) {
                         watcher && watcher();
                         watcher = $scope.$watch(plural, function(count) {
-                            elem.html($i19(i19id, count) || deflt);
+                            elem.html($i19(i19id, count) ||
+                                ($i19.fallback_default ? deflt : i19id));
                             $compile(elem.contents())($scope)
                         });
                     } else {
-                        elem.html($i19(i19id) || deflt);
+                        elem.html($i19(i19id) ||
+                            ($i19.fallback_default ? deflt : i19id));
                         $compile(elem.contents())($scope)
                     }
                 }
@@ -205,7 +219,8 @@ directive('i19Attr', ['$i19', '$interpolate', function($i19, $interpolate) {
                         plural = id_pl[1],
                         deflt = id_pl[2],
                         translated = $i19(i19id,
-                                plural && $scope.$eval(plural)) || deflt;
+                                plural && $scope.$eval(plural)) ||
+                            ($i19.fallback_default ? deflt : i19id);
                         transpolated = $interpolate(translated, true);
                     // re-initialize watchers after every language or
                     // pluralization change to deal with changing variable

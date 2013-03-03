@@ -88,6 +88,32 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
     }
 
     /**
+     * @name i19.$i19.translate._parse_i19attr
+     * @function
+     *
+     * @param {string} i19attr raw i19-attr value
+     * @param {object} attrs element attributes
+     * @param {string} initialize all internationalized attributes with this
+     *                 value. omit to leave untouched.
+     * @returns {object} mapping {attribute_name:
+     *                   [i19id, pluralization expr, default value]}
+     */
+    translate._parse_i19attr = function(i19attr, elem, attrs, init) {
+        var attr_map = {};
+        angular.forEach(i19attr.split(','), function(attspec) {
+            var spec = attspec.trim().split(' '),
+                aname = spec[0].trim(),
+                i19id = (spec[1] || '').trim(),
+                plural = translate._extract_plural(i19id);
+            attrs = attrs || {}; // no defaults if attr_map missing
+            this[aname] = [i19id || translate._sanitize(attrs[aname]),
+                plural, attrs[aname]];
+            init && elem.attr(aname, init);
+        }, attr_map);
+        return attr_map;
+    }
+
+    /**
      * @name i19.$i19.translate.get_lang
      * @function
      *
@@ -199,18 +225,7 @@ directive('i19Attr', ['$i19', '$interpolate', function($i19, $interpolate) {
         restrict: 'A',
         priority: 98,
         compile: function(elem, attrs, transclude) {
-            var attr_map = {};
-            // build mapping {attribute_name: [i19id, pluralization expr]}
-            // and clear current attribute values
-            angular.forEach(attrs.i19Attr.split(','), function(attspec) {
-                var spec = attspec.trim().split(' '),
-                    aname = spec[0].trim(),
-                    i19id = (spec[1] || '').trim(),
-                    plural = $i19._extract_plural(i19id);
-                this[aname] = [i19id || $i19._sanitize(attrs[aname]),
-                    plural, attrs[aname]];
-                elem.attr(aname, '');
-            }, attr_map);
+            var attr_map = $i19._parse_i19attr(attrs.i19Attr, elem, attrs, '');
             return function link($scope, elem) {
                 var watcher = {};
                 // Translate and interpolate one attribute

@@ -158,13 +158,13 @@ Pluralization
 i19 has full pluralization support. Just add an Angular Expression as parameter
 to the i19 ID::
 
-    <p i19="newmails(count)">You have {{count}} new Emails.</p>
+    <p i19="newmails(count)">You have {{count}} mail</p>
 
 ==================  ======================== ==================
 i19 ID              Default                  Example Translation
 ==================  ======================== ==================
-newmails(count)[0]  You have {{count}} mails You have one new Email.
-newmails(count)[1]  You have {{count}} mails You have {{count}} new Emails.
+newmails(count)[0]  You have {{count}} mail  You have one new Email.
+newmails(count)[1]  You have {{count}} mail  You have {{count}} new Emails.
 ==================  ======================== ==================
 
 

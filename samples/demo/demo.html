@@ -18,7 +18,9 @@
           <b i19><i>Name</i>:</b>
           <input type="text" ng-model="name" /> {{name}}
           <img title="title_test" alt="alt_test" i19-attr="title, alt img-alt">
+          <input type="number" step="1" ng-model="count" /> {{count}}
           <hr>
+          <p i19="para-count(count)">You have {{count}} items.</p>
           <p i19="para-continue">
             Click <a i19-name="link" ng-click="modal()" i19="link-continue">here<b>!</b></a> to <i></i>continue
           </p>
@@ -27,10 +29,10 @@
           </p>
           <pre i19="multi_line_id">Multi 
               Line</pre>
-          <span i19="list">List:</span>
+          <span i19="list" i19-attr="title list-title-counter(count)" title="{{count}} items">List:</span>
           <ul>
             <li ng-repeat="item in [1, 2, 3, 4]">
-               <b i19="list">Liste:</b>{{item}} <i19>Index {{$index}}</i19>
+               <b i19="list" title="Counted {{$index}}" i19-attr="title list-title($index)">Liste:</b>{{item}} <i19>Index {{$index}}</i19>
             </li>
           </ul>
           <pre i19>

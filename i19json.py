@@ -12,10 +12,16 @@ from logging import warn, info, getLogger
 
 from babel.messages.pofile import read_po
 
+
+# Match variables or nested i19-name tags
 # TODO broader regex
+# ${match}
 INCLUDES = re.compile('(\$\{[\w\-\.]*\})')
+# {{match}}
 ANGULAR = re.compile('(\{\{[\w\-\.\(\)]*\}\})')
 
+# Match plural number and expression in PO header
+PLURAL_FORMS = re.compile('^nplurals=(\d+); plural=(.*)$')
 
 def add_includes(msgstring, cache):
     """
@@ -42,7 +48,7 @@ def _contains(src, dst, msg, msgid):
             warn(msg, val, msgid)
     return result
 
-def validate_message(translation, original, msgid=''):
+def validate_message(translation, original, msgid, skip_missing_var=False):
     """
     Warn on all newly introduced or missing variables or references in the
     translation
@@ -55,13 +61,47 @@ def validate_message(translation, original, msgid=''):
     return (
             _contains(org_inc, tr_inc,
                     "Translation misses reference %s in %r", msgid) and
-            _contains(org_var, tr_var,
-                    "Translation misses variable %s in %r", msgid) and
+            (skip_missing_var or _contains(org_var, tr_var,
+                    "Translation misses variable %s in %r", msgid)) and
             _contains(tr_inc, org_inc,
                     "Translation introduces reference %s in %r", msgid) and
             _contains(tr_var, org_var,
                     "Translation introduces variable %s in %r", msgid)
             )
+
+
+def catalog2dict(catalog, cache_file, __stats = [0, 0],):
+    """Convert PO catalog to dict suitable for JSON serialization"""
+
+    with file(cache_file) as caf:
+        include_cache, original_strings = load(caf)
+
+    def single(msg_id, msg_str, skip_check=False):
+        """Convert a single message string"""
+        __stats[0] += 1
+        default = original_strings[msg_id][1]
+        if validate_message(msg_str, default, msg_id, skip_check) and msg_str:
+            __stats[1] += 1
+            return add_includes(msg_str, include_cache)
+        else:
+            return ''
+
+    def entry(message):
+        """Convert a single message ID"""
+        if not message.pluralizable:
+            return message.id, single(message.id, message.string)
+        else:
+            return message.id[0], \
+                    [single(message.id[0], mstr, i == 0)
+                            for i, mstr in enumerate(message.string)]
+
+    return dict([entry(msg) for msg in catalog]), __stats[0], __stats[1]
+
+
+def extract_plural_func(catalog):
+    """Extract nplurals and plural from catalog's Plural-Forms header"""
+    forms = dict(catalog.mime_headers)['Plural-Forms']
+    return PLURAL_FORMS.match(forms).groups()
 
 
 def main():
@@ -81,20 +121,16 @@ def main():
     getLogger().level = 0
 
     with file(po_file) as pof:
-        catalog = list(read_po(pof, locale))[1:]
+        catalog = read_po(pof, locale)
 
-    with file(cache_file) as caf:
-        include_cache, original_strings = load(caf)
+    messages, total, translated = catalog2dict(list(catalog)[1:], cache_file)
 
-    messages = dict((message.id, add_includes(message.string, include_cache))
-            for message in catalog
-            if message.string and
-               validate_message(message.string,
-                   original_strings[message.id][1], message.id))
+    info("%s: %d of %d (%d unique) translated (%d%%)",
+            jo_file, translated, total,
+            len(messages), 100.0 * translated / total,)
 
-    info("%s: %d of %d translated (%d%%)",
-            jo_file, len(messages), len(catalog), 
-                    100.0 * len(messages) / len(catalog),)
+    messages['__pluralization_count__'], messages['__pluralization_expr__'] = \
+            extract_plural_func(catalog)
 
     with file(jo_file, 'w') as json_file:
         json.dump({locale: messages}, json_file)

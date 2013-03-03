@@ -152,6 +152,26 @@ link-caption     here                              Referenced in 'outer' as ${li
 ===============  ================================= ==================
 
 
+Pluralization
+^^^^^^^^^^^^^
+
+i19 has full pluralization support. Just add an Angular Expression as parameter
+to the i19 ID::
+
+    <p i19="newmails(count)">You have {{count}} mail</p>
+
+==================  ======================== ==================
+i19 ID              Default                  Example Translation
+==================  ======================== ==================
+newmails(count)[0]  You have {{count}} mail  You have one new Email.
+newmails(count)[1]  You have {{count}} mail  You have {{count}} new Emails.
+==================  ======================== ==================
+
+
+Default pluralization rules are automatically included by PyBabel, and the
+number of available plurals is adjusted per language in the respective PO file.
+i19 imports the pluralization function from the PO file.
+
 JavaScript
 ^^^^^^^^^^
 
@@ -160,6 +180,26 @@ JavaScript
 Finally, the translation engine can be accessed programmatically from Javascript::
 
     alert($i19("Hello World"));
+
+Pluralization::
+
+    alert($i19("You have mail(s)", $scope.count));
+
+
+.. hint::
+
+    If you want Angular-style variable substitution for JavaScript
+    strings, use ``$interpolate``::
+
+        function multi_mail() {
+            var translated =
+                $i19("You have {{count}} mail", $scope.count);
+            return $interpolate(translated)($scope);
+        }
+        $scope.mail_counter = 1;
+        multi_mail() == "You have one Email.";
+        $scope.mail_counter = 23;
+        multi_mail() == "You have 23 Emails.";
 
 
 Installation
@@ -264,13 +304,7 @@ Future Features
 
   * Attribute/Tag name converter for Chameloen to verify fall back
 
-  * Eval angular pluralization support vs rolling our own
-
-    * Possible syntax: Parameter to i18n ID e.g. ``<i19="id(number)">..``
-
-  * Manhole for live updates of translation files
-
-    * Allow translators to see the live app with their own tranlation strings
+  * Manhole with support functions for translators
 
 
 TODO

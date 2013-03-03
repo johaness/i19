@@ -8,6 +8,7 @@ import sys
 from HTMLParser import HTMLParser
 import time
 from cPickle import dump
+import re
 
 # from pygettext
 POT_HEADER = '''\
@@ -27,6 +28,23 @@ msgstr ""
 "Content-Transfer-Encoding: ENCODING\\n"
 "Generated-By: i19extract.py 0.1\\n"
 
+'''
+
+POT_SINGULAR = '''
+#. %s
+#. Default: %s
+#: %s
+msgid "%s"
+msgstr ""
+'''
+
+POT_PLURAL = '''
+#. %s
+#. Default: %s
+#: %s
+msgid "%s"
+msgid_plural "%s"
+msgstr ""
 '''
 
 # List of void HTML elements (ie without end tag)
@@ -49,6 +67,15 @@ def fmttag(tag, attr, exclude=()):
     """
     return "<%s>" % (" ".join([tag] +
         ['%s="%s"' % (k, v) for k, v in attr if not k in exclude]),)
+
+
+def sanitize(i19id):
+    """
+    Filter i18n IDs to me alphanumeric characters and - or _ only
+    """
+    e19id = re.sub(r'\\.', '', i19id)
+    return "".join(c for c in e19id if c.isalnum() or c in "-_")
+
 
 class i19Parser(HTMLParser):
     """
@@ -138,7 +165,7 @@ class i19Parser(HTMLParser):
             self._include = ['', 0, '']
 
         data = data.strip().replace('\n', '\\n')
-        self.strs[(i19id or data)] = \
+        self.strs[(i19id or sanitize(data))] = \
                 ("%s:%d" % (self._fn, self.lineno,), data, doc)
 
     def handle_data(self, data):
@@ -163,8 +190,10 @@ def main():
     with file(sys.argv[1], 'w') as pot:
         pot.write(POT_HEADER % (time.strftime('%Y-%m-%d %H:%M+0000'),))
         for i19id, dt in strs.items():
-            pot.write('#. %s\n#. Default: %s\n#: %s\nmsgid "%s"\nmsgstr ""\n\n' %
-                    (dt[2], dt[1], dt[0], i19id,))
+            if i19id.endswith(')'):
+                pot.write(POT_PLURAL % (dt[2], dt[1], dt[0], i19id, i19id,))
+            else:
+                pot.write(POT_SINGULAR % (dt[2], dt[1], dt[0], i19id,))
 
     with file(sys.argv[2], 'wb') as i19n:
         dump((inc, strs,), i19n)

@@ -181,6 +181,7 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
 directive('i19', ['$i19', '$compile', function($i19, $compile) {
     return {
         priority: 99,
+        restrict: 'EA',
         compile: function(elem, attrs, transclude) {
             var i19id = attrs.i19 || $i19._sanitize(elem.html().trim()),
                 plural = $i19._extract_plural(attrs.i19 || ''),

@@ -190,17 +190,19 @@ directive('i19', ['$i19', '$compile', function($i19, $compile) {
             attrs.i19 || elem.attr('i19', i19id);
             return function($scope, elem) {
                 function re_compile() {
+                    function update(count) {
+                        var val = $i19(i19id, count) ||
+                            ($i19.fallback_default ? deflt : i19id);
+                        elem.html(val);
+                        // got scope interpolation or embedded HTML
+                        if (val.match(/{{/) || val.match(/</))
+                            $compile(elem.contents())($scope);
+                    };
                     if (plural) {
                         watcher && watcher();
-                        watcher = $scope.$watch(plural, function(count) {
-                            elem.html($i19(i19id, count) ||
-                                ($i19.fallback_default ? deflt : i19id));
-                            $compile(elem.contents())($scope)
-                        });
+                        watcher = $scope.$watch(plural, update);
                     } else {
-                        elem.html($i19(i19id) ||
-                            ($i19.fallback_default ? deflt : i19id));
-                        $compile(elem.contents())($scope)
+                        update(undefined);
                     }
                 }
                 $scope.$on('language_changed', re_compile);

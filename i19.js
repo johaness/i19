@@ -187,6 +187,7 @@ directive('i19', ['$i19', '$compile', function($i19, $compile) {
                 plural = $i19._extract_plural(attrs.i19 || ''),
                 deflt = elem.html(),
                 watcher;
+            attrs.i19 || elem.attr('i19', i19id);
             return function($scope, elem) {
                 function re_compile() {
                     if (plural) {

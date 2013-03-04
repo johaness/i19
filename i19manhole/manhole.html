@@ -8,7 +8,7 @@
         Edit Language:
         <select ng-model="edit_lang" ng-options="l for l in langs"></select>
     </header>
-    <content ng-repeat="id in edit_ids">
+    <article ng-repeat="id in edit_ids">
         <div ng-switch on="isArray(i19dict[edit_lang][id])">
             <div ng-switch-when="false">
                 ID: <b>{{id}}</b><br/>
@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div>
-    </content>
+    </article>
     <footer>
         Press CTRL and click a string to translate
     </footer>

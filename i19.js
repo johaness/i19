@@ -106,7 +106,7 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
                 i19id = (spec[1] || '').trim(),
                 plural = translate._extract_plural(i19id);
             attrs = attrs || {}; // no defaults if attr_map missing
-            this[aname] = [i19id || translate._sanitize(attrs[aname]),
+            this[aname] = [i19id || translate._sanitize(attrs[aname] || ''),
                 plural, attrs[aname]];
             init && elem.attr(aname, init);
         }, attr_map);

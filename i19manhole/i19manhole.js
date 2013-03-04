@@ -66,7 +66,6 @@ directive('i19manhole', ['$document', '$timeout', '$i19', 'i19dict', 'hotkeyregi
             }
             angular.forEach(i19dict, function(v, k) {
                 this.unshift(k);
-                console.log(k);
             }, scope.langs = []);
             $document.bind('click', function(e) {
                 if (! scope.visible) return;
@@ -79,8 +78,15 @@ directive('i19manhole', ['$document', '$timeout', '$i19', 'i19dict', 'hotkeyregi
                     target = target.parentNode;
                 }
                 if (! target) return;
+                scope.$apply(function(s) {
+                    if (i19id)
+                        s.edit_ids.push(i19id);
+                    if (attrs) {
+                        for (var k in $i19._parse_i19attr(attrs))
+                            s.edit_ids.push(k);
+                    }
+                });
                 pulse(target);
-                if (i19id) scope.$apply(function(s) { s.edit_ids.push(i19id); });
                 e.preventDefault();
             });
         }

@@ -1,65 +1,30 @@
-<div draggable ng-show="visible" style="
-    display: block;
-    width: 300px;
-    min-height: 100px;
-    cursor: move;
-    position: fixed;
-    left: 10px;
-    top: 10px;
-    font-family: sans-serif;
-    font-size: 14px;
-    padding: 5px 20px;
-    border-radius: 10px;
-    background-color: #4b5466;
-    border: 1px solid #245;
-    box-shadow: 0 0 5px #4b5466;">
-    <span ng-click="visible = false" style="
-        font-size: 24px;
-        color: #ccc;
-        float: right;
-        margin: 0 -10px;
-        ">&#x2612;</span>
+<div draggable ng-show="visible" class="i19mh">
+    <span ng-click="visible = false" id="close">&#x2612;</span>
     <h1 style="
-        margin: 0;
-        color: #FFF;
         ">i19 manhole</h1>
-    <div style="
-        margin: 0 -20px;
-        padding: 10px 20px;
-        background-color: #eee;">
+    <header>
         View Language:
         <select ng-model="display_lang" ng-options="l for l in langs"></select>
         Edit Language:
         <select ng-model="edit_lang" ng-options="l for l in langs"></select>
-    </div>
-    <div ng-repeat="id in edit_ids" style="
-        background-color: #ddd;
-        margin: 0 -20px;
-        padding: 10px 20px;
-        border-bottom: 1px dotted grey;
-        ">
+    </header>
+    <content ng-repeat="id in edit_ids">
         <div ng-switch on="isArray(i19dict[edit_lang][id])">
             <div ng-switch-when="false">
                 ID: <b>{{id}}</b><br/>
                 <span>{{display_lang}}: {{i19dict[display_lang][id]}}</span><br/>
-                <textarea ng-model="i19dict[edit_lang][id]" rows="1" style="
-                    width:100% !important"></textarea>
+                <textarea ng-model="i19dict[edit_lang][id]" rows="1"></textarea>
             </div>
             <div ng-switch-when="true">
-                <div ng-repeat="subid in i19dict[edit_lang][id]" style="
-                    margin: 0 -10px;
-                    padding: 10px;">
+                <div ng-repeat="subid in i19dict[edit_lang][id]" class="subid">
                     ID: <b>{{id}}[{{$index}}]</b><br/>
                     <span>{{display_lang}}: {{i19dict[display_lang][id][$index]}}</span><br/>
-                    <textarea ng-model="i19dict[edit_lang][id][$index]" rows="1" style="
-                        width:100% !important"></textarea>
+                    <textarea ng-model="i19dict[edit_lang][id][$index]" rows="1"></textarea>
                 </div>
             </div>
         </div>
-    </div>
-    <i style="
-        font-size: 12px;
-        line-height: 25px;
-        color: #ddd;
-        ">Press CTRL and click a string to translate</i>
+    </content>
+    <footer>
+        Press CTRL and click a string to translate
+    </footer>
 </div>

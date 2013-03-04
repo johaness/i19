@@ -1,0 +1,49 @@
+.i19mh {
+    display: block;
+    width: 300px;
+    min-height: 100px;
+    cursor: move;
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    font-family: sans-serif;
+    font-size: 14px;
+    padding: 5px 20px;
+    border-radius: 10px;
+    background-color: #4b5466;
+    border: 1px solid #245;
+    box-shadow: 0 0 5px #4b5466;
+}
+.i19mh #close {
+    font-size: 24px;
+    color: #ccc;
+    float: right;
+    margin: 0 -10px;
+}
+.i19mh h1 {
+    margin: 0;
+    color: #FFF;
+}
+.i19mh header {
+    margin: 0 -20px;
+    padding: 10px 20px;
+    background-color: #eee;
+}
+.i19mh footer {
+    font-size: 12px;
+    line-height: 25px;
+    color: #ddd;
+}
+.i19mh content {
+    background-color: #ddd;
+    margin: 0 -20px;
+    padding: 10px 20px;
+    border-bottom: 1px dotted grey;
+}
+.i19mh content .subid {
+    margin: 0 -10px;
+    padding: 10px;
+}
+.i19mh textarea {
+    width: 100%;
+}

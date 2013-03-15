@@ -142,6 +142,9 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
         return def;
     }
 
+    // inject i19 into rootScope so we can access it in partials
+    $scope.i19 = function(a, b) { return translate(a, b) || a; };
+
     return translate;
 }]).
 

@@ -120,10 +120,16 @@ class i19Parser(HTMLParser):
             self._i19.append(['', '', self._nest])
         elif 'i19' in attrdict:
             self._i19.append([attrdict.get('i19') or '', '', self._nest])
+        elif 'data-i19' in attrdict:
+            self._i19.append([attrdict.get('data-i19') or '', '', self._nest])
 
         # handle i19-attr attribute for translating attributes
-        trans_attr = 'i19-attr' in attrdict and \
-                attrdict.get('i19-attr').split(',') or []
+        trans_attr = []
+        if 'i19-attr' in attrdict:
+            trans_attr = attrdict.get('i19-attr').split(',')
+        elif 'data-i19attr' in attrdict:
+            trans_attr = attrdict.get('data-i19attr').split(',')
+
         for attribute in trans_attr:
             spec = attribute.strip().split(' ')
             value = attrdict[spec[0]]

@@ -132,6 +132,10 @@ class i19Parser(HTMLParser):
 
         for attribute in trans_attr:
             spec = attribute.strip().split(' ')
+            if not spec[0] in attrdict:
+                raise RuntimeError(
+                        "Cannot find attribute %r on <%s> in %s:%s" %
+                        (spec[0], tag, self._fn, self.lineno,))
             value = attrdict[spec[0]]
             if len(spec) == 1: # no translation id given
                 spec.append(value)

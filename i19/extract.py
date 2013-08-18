@@ -5,47 +5,11 @@ Extract i19 messages from HTML, write gettext pot file and include cache
 """
 
 import sys
+import os
 from HTMLParser import HTMLParser
 import time
-from cPickle import dump
+from cPickle import dump, load
 import re
-
-# from pygettext
-POT_HEADER = '''\
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\\n"
-"POT-Creation-Date: %s\\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
-"Language-Team: LANGUAGE <LL@li.org>\\n"
-"MIME-Version: 1.0\\n"
-"Content-Type: text/plain; charset=utf-8\\n"
-"Content-Transfer-Encoding: ENCODING\\n"
-"Generated-By: i19extract.py 0.1\\n"
-
-'''
-
-POT_SINGULAR = '''
-#. %s
-#. Default: %s
-#: %s
-msgid "%s"
-msgstr ""
-'''
-
-POT_PLURAL = '''
-#. %s
-#. Default: %s
-#: %s
-msgid "%s"
-msgid_plural "%s"
-msgstr ""
-'''
 
 # List of void HTML elements (ie without end tag)
 VOID_TAGS = (
@@ -71,7 +35,7 @@ def fmttag(tag, attr, exclude=()):
 
 def sanitize(i19id):
     """
-    Filter i18n IDs to me alphanumeric characters and - or _ only
+    Filter i18n IDs to contain only alphanumeric characters and ``-_``
     """
     e19id = re.sub(r'\\.', '', i19id)
     return "".join(c for c in e19id if c.isalnum() or c in "-_")
@@ -92,9 +56,7 @@ class i19Parser(HTMLParser):
         # collect {i18n ID: translation strings}
         self.strs, self.includes = dict(), dict()
 
-        self._fn = filename
-        with file(filename) as inf:
-            self.feed(inf.read())
+        self.feed(filename.read())
 
     def handle_starttag(self, tag, attrs):
         if not tag in VOID_TAGS:
@@ -134,13 +96,14 @@ class i19Parser(HTMLParser):
             spec = attribute.strip().split(' ')
             if not spec[0] in attrdict:
                 raise RuntimeError(
-                        "Cannot find attribute %r on <%s> in %s:%s" %
-                        (spec[0], tag, self._fn, self.lineno,))
+                        "Cannot find attribute %r on <%s> in :%s" %
+                        (spec[0], tag, self.lineno,))
             value = attrdict[spec[0]]
             if len(spec) == 1: # no translation id given
                 spec.append(value)
-            self.strs[spec[1]] = ("%s:%d" % (self._fn, self.lineno,), value,
-                    '<%s %s>' % (tag, spec[0]))
+            self.strs[spec[1]] = (
+                self.lineno, value, '<%s %s>' % (tag, spec[0])
+            )
 
 
     def handle_endtag(self, tag):
@@ -175,8 +138,7 @@ class i19Parser(HTMLParser):
             self._include = ['', 0, '']
 
         data = data.strip().replace('\n', '\\n')
-        self.strs[(i19id or sanitize(data))] = \
-                ("%s:%d" % (self._fn, self.lineno,), data, doc)
+        self.strs[(i19id or sanitize(data))] = (self.lineno, data, doc)
 
     def handle_data(self, data):
         if not self._i19:
@@ -187,26 +149,23 @@ class i19Parser(HTMLParser):
 
 
 
-def main():
-    assert len(sys.argv) > 3, \
-            "Usage: i19extract POT_FILE CACHE_FILE [SOURCES..]"
-
-    strs, inc = dict(), dict()
-    for src_file in sys.argv[3:]:
-        parser = i19Parser(src_file)
-        strs.update(parser.strs.items())
-        inc.update(parser.includes.items())
-
-    with file(sys.argv[1], 'w') as pot:
-        pot.write(POT_HEADER % (time.strftime('%Y-%m-%d %H:%M+0000'),))
-        for i19id, dt in strs.items():
-            if i19id.endswith(')'):
-                pot.write(POT_PLURAL % (dt[2], dt[1], dt[0], i19id, i19id,))
-            else:
-                pot.write(POT_SINGULAR % (dt[2], dt[1], dt[0], i19id,))
-
-    with file(sys.argv[2], 'wb') as i19n:
+def extract(fileobj, keywords, comment_tags, options):
+    """
+    Invoked by Babel per file
+    """
+    parser = i19Parser(fileobj)
+    for i19id, dt in parser.strs.items():
+        if i19id.endswith(')'):
+            yield (dt[0], 'ngettext', (i19id, i19id,), [u"Default: %s" % dt[1], dt[2]])
+        else:
+            yield (dt[0], None, i19id,  [u"Default: %s" % dt[1], dt[2]])
+    if os.path.isfile(options['expr_cache']):
+        with file(options['expr_cache']) as i19n:
+            inc, strs = load(i19n)
+    else:
+        inc, strs = {}, {}
+    inc.update(parser.includes)
+    strs.update(parser.strs)
+    with file(options['expr_cache'], 'wb') as i19n:
         dump((inc, strs,), i19n)
 
-if __name__ == '__main__':
-    main()

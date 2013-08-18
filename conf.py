@@ -1,4 +1,3 @@
-import sys, os
 extensions = []
 source_suffix = '.rst'
 master_doc = 'README'

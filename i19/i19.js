@@ -24,8 +24,10 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
      * @private
      * @description Convert an amount into an index into the pluralization list
      */
-    function count2plural(n) {
-        return 0 + eval(i19dict[language].__pluralization_expr__);
+    function count2plural(number) {
+        return 0 + eval('(function(n){ return ' +
+            i19dict[language].__pluralization_expr__ +
+            '})')(number);
     }
 
     /**

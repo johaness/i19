@@ -43,7 +43,7 @@ class json_angular(Command):
 
     def run(self):
         out = []
-        for locale in os.listdir(self.directory):
+        for locale in sorted(os.listdir(self.directory)):
             file_name = os.path.join(
                 self.directory,
                 locale,

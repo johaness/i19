@@ -14,7 +14,7 @@ def main():
     fullpath = osp.join(modpath, sys.argv[1])
     if not osp.exists(fullpath):
         sys.exit('"{}" not found in "{}".'.format(sys.argv[1], modpath))
-    print fullpath
+    print(fullpath)
 
 
 if __name__ == '__main__':

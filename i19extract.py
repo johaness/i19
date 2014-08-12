@@ -5,10 +5,18 @@ Extract i19 messages from HTML, write gettext pot file and include cache
 """
 
 import sys
-from HTMLParser import HTMLParser
 import time
-from cPickle import dump
 import re
+
+try:
+    from HTMLParser import HTMLParser  # Python 2.x
+except ImportError:
+    from html.parser import HTMLParser  # Python 3.x
+
+try:
+    from cPickle import dump  # Python 2.x
+except ImportError:
+    from pickle import dump  # Python 3.x
 
 # from pygettext
 POT_HEADER = '''\
@@ -194,12 +202,12 @@ def main():
     strs, inc = dict(), dict()
     for src_file in sys.argv[3:]:
         parser = i19Parser(src_file)
-        strs.update(parser.strs.items())
-        inc.update(parser.includes.items())
+        strs.update(list(parser.strs.items()))
+        inc.update(list(parser.includes.items()))
 
     with file(sys.argv[1], 'w') as pot:
         pot.write(POT_HEADER % (time.strftime('%Y-%m-%d %H:%M+0000'),))
-        for i19id, dt in strs.items():
+        for i19id, dt in list(strs.items()):
             if i19id.endswith(')'):
                 pot.write(POT_PLURAL % (dt[2], dt[1], dt[0], i19id, i19id,))
             else:

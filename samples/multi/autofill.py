@@ -19,4 +19,4 @@ po = file(sys.argv[1]).read()
 translated = re.sub('msgstr ""\n\n', fortune, po)
 with file(sys.argv[1], 'w') as out:
     out.write(translated)
-print count, "translations"
+print("{} translations".format(count))

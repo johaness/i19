@@ -52,16 +52,16 @@ class json_angular(Command):
             )
             if os.path.exists(file_name):
                 if ((self.locales is None) or (locale in self.locales)):
-                    print "Include:", file_name
+                    print("Include: {}".format(file_name))
                     out.append(file(file_name).read())
                 else:
                     url = "%s%s/%s.json" % (self.json_url, locale, self.domain,)
-                    print "URL:", url
+                    print("URL: {}".format(url))
                     out.append('{"%s": "%s"}' % (locale, url,))
 
         json = [u'angular.extend(d, %s);\n' % o for o in out]
         out_name = os.path.join(self.directory, self.domain + '.js')
         with file(out_name, 'w') as outf:
             outf.write(JS_TEMPLATE % (''.join(json)))
-            print "Wrote AngularJS module i19catalog to", out_name
+            print("Wrote AngularJS module i19catalog to {}".format(out_name))
 

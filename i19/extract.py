@@ -163,7 +163,7 @@ def extract(fileobj, keywords, comment_tags, options):
     Invoked by Babel per file
     """
     parser = i19Parser(fileobj)
-    for i19id, dt in parser.strs.items():
+    for i19id, dt in list(parser.strs.items()):
         if i19id.endswith(')'):
             yield (dt[0], 'ngettext', (i19id, i19id,), [u"Default: %s" % dt[1], dt[2]])
         else:

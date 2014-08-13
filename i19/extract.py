@@ -6,10 +6,19 @@ Extract i19 messages from HTML, write gettext pot file and include cache
 
 import sys
 import os
-from HTMLParser import HTMLParser
 import time
-from cPickle import dump, load
 import re
+
+try:
+    from HTMLParser import HTMLParser  # Python 2.x
+except ImportError:
+    from html.parser import HTMLParser  # Python 3.x
+
+try:
+    from cPickle import dump  # Python 2.x
+except ImportError:
+    from pickle import dump  # Python 3.x
+
 
 # List of void HTML elements (ie without end tag)
 VOID_TAGS = (

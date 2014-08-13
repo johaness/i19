@@ -38,6 +38,7 @@ factory('$i19', ['$rootScope', 'i19dict', '$http', '$q',
      * Translation function
      *
      * @param {string} input i18n ID of translation string
+     * @param {number} plural number to use to pluralize this message
      * @returns {string} translation for i18n ID in current language
      *
      * @example $i19('Welcome') == 'Willkommen'

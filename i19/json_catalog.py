@@ -7,8 +7,13 @@ Compile gettext po file into json
 import sys
 import os
 import json
-from cPickle import load
 import re
+
+try:
+    from cPickle import load  # Python 2.x
+except ImportError:
+    from pickle import load  # Python 3.x
+
 from logging import warn, info, getLogger
 
 from distutils.cmd import Command

@@ -8,12 +8,7 @@ import sys
 import os
 import json
 import re
-
-try:
-    from cPickle import load  # Python 2.x
-except ImportError:
-    from pickle import load  # Python 3.x
-
+from pickle import load
 from logging import warn, info, getLogger
 
 from distutils.cmd import Command
@@ -119,7 +114,7 @@ def catalog2dict(catalog, cache_file):
     """Convert PO catalog to dict suitable for JSON serialization"""
     __stats = [0, 0]
 
-    with file(cache_file) as caf:
+    with open(cache_file, 'rb') as caf:
         include_cache, original_strings = load(caf)
 
     def single(msg_id, msg_str, skip_check=False):
@@ -161,7 +156,7 @@ def write_json(po_file, locale, cache_file, jo_file):
     getLogger().name = po_file
     getLogger().level = 0
 
-    with file(po_file) as pof:
+    with open(po_file) as pof:
         catalog = read_po(pof, locale)
 
     messages, total, translated = catalog2dict(list(catalog)[1:], cache_file)
@@ -173,6 +168,6 @@ def write_json(po_file, locale, cache_file, jo_file):
     messages['__pluralization_count__'], messages['__pluralization_expr__'] = \
             extract_plural_func(catalog)
 
-    with file(jo_file, 'w') as json_file:
+    with open(jo_file, 'w') as json_file:
         json.dump({locale: messages}, json_file)
 

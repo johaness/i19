@@ -8,16 +8,12 @@ import sys
 import os
 import time
 import re
+from pickle import load, dump
 
 try:
     from HTMLParser import HTMLParser  # Python 2.x
 except ImportError:
     from html.parser import HTMLParser  # Python 3.x
-
-try:
-    from cPickle import dump  # Python 2.x
-except ImportError:
-    from pickle import dump  # Python 3.x
 
 
 # List of void HTML elements (ie without end tag)
@@ -54,7 +50,7 @@ class i19Parser(HTMLParser):
     """
     Parse HTML and extract i19, i19-attr, and i19-name strings
     """
-    def __init__(self, filename):
+    def __init__(self, file):
         HTMLParser.__init__(self)
         # stack of i18n IDs
         self._i19 = []
@@ -65,7 +61,7 @@ class i19Parser(HTMLParser):
         # collect {i18n ID: translation strings}
         self.strs, self.includes = dict(), dict()
 
-        self.feed(filename.read())
+        self.feed(file.read().decode())
 
     def handle_starttag(self, tag, attrs):
         if not tag in VOID_TAGS:
@@ -135,7 +131,7 @@ class i19Parser(HTMLParser):
 
         if self._i19 and self._include[0]:
             # documentation for nested i19 tags
-            doc = "Referenced in %r as %s" % \
+            doc = "Referenced in '%s' as %s" % \
                     (self._i19[-1][0], self._include[0],)
         else:
             doc = ''
@@ -163,18 +159,17 @@ def extract(fileobj, keywords, comment_tags, options):
     Invoked by Babel per file
     """
     parser = i19Parser(fileobj)
-    for i19id, dt in list(parser.strs.items()):
+    for i19id, dt in parser.strs.items():
         if i19id.endswith(')'):
             yield (dt[0], 'ngettext', (i19id, i19id,), [u"Default: %s" % dt[1], dt[2]])
         else:
             yield (dt[0], None, i19id,  [u"Default: %s" % dt[1], dt[2]])
     if os.path.isfile(options['expr_cache']):
-        with file(options['expr_cache']) as i19n:
+        with open(options['expr_cache'], 'rb') as i19n:
             inc, strs = load(i19n)
     else:
         inc, strs = {}, {}
     inc.update(parser.includes)
     strs.update(parser.strs)
-    with file(options['expr_cache'], 'wb') as i19n:
+    with open(options['expr_cache'], 'wb') as i19n:
         dump((inc, strs,), i19n)
-
